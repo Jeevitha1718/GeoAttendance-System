@@ -627,44 +627,63 @@ function handleResetPassword(event) {
   }
 }
 
+function showError(error) {
+    const locationStatus = document.getElementById("location-status");
+
+    let message = "";
+
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            message = "📍 Please allow location access to mark attendance.";
+            break;
+
+        case error.POSITION_UNAVAILABLE:
+            message = "📍 Location information is unavailable.";
+            break;
+
+        case error.TIMEOUT:
+            message = "⏳ Location request timed out.";
+            break;
+
+        default:
+            message = "❌ An unknown error occurred.";
+    }
+
+    locationStatus.innerText = message;
+    locationStatus.style.color = "red";
+}
+
 // **Get User Location**
 function getUserLocation() {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (!loggedInUser) return;
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const locationStatus = document.getElementById("location-status");
 
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const locationStatus = document.getElementById("location-status");
+                locationStatus.innerText =
+                    `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
-        // Update location text
-        locationStatus.innerText = `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-
-        // Check if user is inside their specific geofence
-        if (isWithinAnyGeofence(latitude, longitude, loggedInUser.email)) {
-          locationStatus.innerText += " (Within Geofence)";
-          locationStatus.style.color = "green";
-          markAttendanceAutomatically();
-        } else {
-          locationStatus.innerText += " (Outside Geofence)";
-          locationStatus.style.color = "red";
-          markAbsentIfLeft();
-        }
-      },
-      (error) => {
-        alert("Error getting location: " + error.message);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
-      }
-    );
-  } else {
-    alert("Geolocation is not supported by this browser.");
-  }
+                if (isWithinAnyGeofence(latitude, longitude, loggedInUser.email)) {
+                    locationStatus.innerText += " (Within Geofence)";
+                    locationStatus.style.color = "green";
+                    markAttendanceAutomatically();
+                } else {
+                    locationStatus.innerText += " (Outside Geofence)";
+                    locationStatus.style.color = "red";
+                    markAbsentIfLeft();
+                }
+            },
+            showError,
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    }
 }
+
 
 // **Check if User is Inside their Geofence**
 function isWithinAnyGeofence(userLat, userLng, userEmail) {
