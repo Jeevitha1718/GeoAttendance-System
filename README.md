@@ -18,6 +18,14 @@ A modern web-based attendance system that combines **Face Recognition** and **Ge
 
 ---
 
+## 🌐 Live Demo
+
+🔗 **Live Website:** https://jeevitha1718.github.io/GeoAttendance-System/
+
+⭐ No installation required — open the link and explore the application.
+
+---
+
 ## ✨ Overview
 
 Traditional attendance systems can be manipulated through proxy attendance or remote check-ins. This project solves those issues by verifying both:
